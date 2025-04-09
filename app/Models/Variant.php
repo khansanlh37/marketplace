@@ -10,7 +10,7 @@ class Variant extends Model
     use HasFactory;
 
     protected $fillable = [
-        'type', 'color', 'image', 'category_id', 'branch_id', 'product_id', 'price',
+        'type', 'color', 'image', 'category_id', 'branch_id', 'product_id', 'price',  'product_type_id',
     ];
 
     // Relasi dengan Category, Branch dan Product
@@ -27,6 +27,11 @@ class Variant extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function productType()
+    {
+        return $this->belongsTo(ProductType::class);
     }
 }
 

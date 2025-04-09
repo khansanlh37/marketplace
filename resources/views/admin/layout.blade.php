@@ -72,6 +72,7 @@
             </button>
             <ul class="dropdown-menu" aria-labelledby="productDropdown">
                 <li><a class="dropdown-item" href="{{ route('admin.products') }}">Product Management</a></li>
+                <li><a class="dropdown-item" href="{{ route('admin.product-types.index') }}">Type Product Management</a></li>
                 <li><a class="dropdown-item" href="{{ route('admin.variants.index') }}">Variants Management</a></li>
                 <li><a class="dropdown-item" href="{{ route('admin.branches.index') }}">Branch Management</a></li>
             </ul>

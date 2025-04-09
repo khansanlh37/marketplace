@@ -54,28 +54,38 @@ class ProductController extends Controller
 
     public function show($id): View
     {
-        $product = Product::with(['variants' => function ($query) {
-            $query->orderBy('color');
-        }])->findOrFail($id);
-
-        // Ambil tipe yang unik dari variants, hanya ambil tipe yang tidak kosong dan bukan 'N/A'
+        $product = Product::with([
+            'variants' => function ($query): void {
+                $query->orderBy('color');
+            },
+            'variants.productType'
+        ])->findOrFail($id);
+    
+        // Filter varian yang punya tipe yang valid
         $variants = $product->variants
-        ->filter(function ($variant) {
-            return !empty($variant->type) && strtoupper($variant->type) !== 'N/A';
-        })
-        ->unique('type')
-        ->values();
-
-        // Pastikan gambar tiap variant bisa diakses
+            ->filter(function ($variant): bool {
+                return !empty($variant->type) && strtoupper($variant->type) !== 'N/A';
+            })
+            ->unique('type')
+            ->values();
+    
+        // Ambil tipe produk dari relasi
+        $productTypes = $product->variants
+            ->pluck('productType')
+            ->filter() // hapus null
+            ->unique('id')
+            ->values();
+    
+        // Ubah path gambar agar bisa diakses
         foreach ($product->variants as $variant) {
             if (!empty($variant->image)) {
                 $variant->image = asset('storage/' . $variant->image);
             }
         }
-
-        // Pastikan pengembalian nilai menggunakan view() dengan data array
-        return view('products.show', compact('product', 'variants'));
+    
+        return view('products.show', compact('product', 'variants', 'productTypes'));
     }
+    
 
     public function getVariantsByType(Request $request)
     {

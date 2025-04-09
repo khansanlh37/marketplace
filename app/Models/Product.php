@@ -16,6 +16,7 @@ class Product extends Model
         'description',
         'branch_id', 
         'image',
+        'product_type_id',
     ];
 
     protected $casts = [
@@ -40,5 +41,10 @@ class Product extends Model
     public function images()
     {
         return $this->hasMany(Image::class);
+    }
+
+    public function productType()
+    {
+        return $this->belongsTo(ProductType::class);
     }
 }

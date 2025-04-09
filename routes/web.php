@@ -5,15 +5,18 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductDetailController;
 use App\Http\Controllers\Admin\AdminProductController;
 use App\Http\Controllers\Admin\AdminVariantController;
+use App\Http\Controllers\Admin\ProductTypeController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\FavoriteController;
 
-// Route::post('/variants', [AdminVariantController::class, 'store'])->name('admin.variants.store');
-// routes/web.php
-Route::get('/admin/variants/product_id/{product_id}/type/{type}', [AdminVariantController::class, 'getVariantByType']);
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::resource('product-types', App\Http\Controllers\Admin\ProductTypeController::class);
+});
 
+// Route::post('/variants', [AdminVariantController::class, 'store'])->name('admin.variants.store');
+Route::get('/admin/variants/product_id/{product_id}/id/{id}', [AdminVariantController::class, 'getVariantByType']);
 
 Route::prefix('admin')->name('admin.')->group(function () {
 
@@ -36,6 +39,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 
 Route::get('/admin/branches', [BranchController::class, 'index'])->name('admin.branches.index');
+
 Route::get('/admin/products', [AdminProductController::class, 'index'])->name('admin.products');
 
 Route::get('/product/variants', [ProductController::class, 'getVariantsByType']);

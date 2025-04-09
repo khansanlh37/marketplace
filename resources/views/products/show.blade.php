@@ -19,7 +19,7 @@
                     <div
                         class="variant-box rounded text-center"
                         style="cursor: pointer; width: 45px;" {{-- lebar dikit agar tetap compact --}}
-                        onclick="selectVariant('{{ $variant->type }}')"
+                        onclick="selectVariant('{{ $variant->id }}')"
                     >
                         <div
                             style="width: 36px; height: 36px; background-color: {{ $variant->color }}; border: 1px solid #ccc;"
@@ -34,8 +34,8 @@
             <!-- <p id="selected-color" class="mb-2">Warna: -</p> -->
             <select name="variant" class="form-control" id="variantType">
                 <option value="">Pilih Tipe</option>
-                @foreach ($product->variants as $variant)
-                    <option value="{{ $variant->type }}">{{ $variant->type }}</option>
+                @foreach($productTypes as $type)
+                    <option value="{{ $type->id }}">{{ $type->name }}</option>
                 @endforeach
             </select>
             
@@ -47,10 +47,10 @@
 
 <script>
     // Fungsi saat klik variant box
-    function selectVariant(type) {
+    function selectVariant(id) {
         // Set dropdown ke tipe yang diklik
         const variantSelect = document.getElementById('variantType');
-        variantSelect.value = type;
+        variantSelect.value = id;
 
         // Panggil event change agar fetch berjalan
         variantSelect.dispatchEvent(new Event('change'));
@@ -67,9 +67,10 @@
         document.getElementById("product-image").src = '/loading.gif';
         // document.getElementById("selected-color").innerText = 'Memuat warna...';
 
-        fetch(`/admin/variants/product_id/${productId}/type/${selectedType}`)
+        fetch(`/admin/variants/product_id/${productId}/id/${selectedType}`)
             .then(response => response.json())
             .then(data => {
+                console.log(data); // tambahkan ini untuk memastikan isi response
                 if (data.length > 0) {
                     document.getElementById("product-image").src = data[0].gambar;
                     // document.getElementById("selected-color").innerText = 'Warna: ' + data[0].color;

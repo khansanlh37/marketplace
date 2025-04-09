@@ -9,8 +9,13 @@
         @method('PUT')
 
         <div class="form-group">
-            <label for="type">Tipe Produk</label>
-            <input type="text" name="type" class="form-control" value="{{ $variant->type }}" required>
+            <label for="product_type_id">Tipe Produk</label>
+            <select name="product_type_id" class="form-control" required>
+                <option value="">-- Pilih Tipe Produk --</option>
+                @foreach($productTypes as $type)
+                    <option value="{{ $type->id }}">{{ $type->name }}</option>
+                @endforeach
+            </select>
         </div>
 
         <div class="form-group">

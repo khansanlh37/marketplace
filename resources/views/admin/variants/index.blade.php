@@ -27,7 +27,7 @@
             @foreach ($variants as $variant)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
-                    <td>{{ $variant->type }}</td>
+                    <td>{{ $variant->productType->name ?? '-' }}</td>
                     <td>Rp {{ number_format($variant->price, 0, ',', '.') }}</td> <!-- Menampilkan harga -->
                     <td style="background-color: {{ $variant->color }};"></td>
                     <td><img src="{{ asset('storage/' . $variant->image) }}" width="50" height="50" alt="Variant Image"></td>
@@ -65,8 +65,13 @@
                 @csrf
                 
                 <div class="form-group">
-                    <label for="type">Tipe Produk</label>
-                    <input type="text" class="form-control" name="type" required>
+                    <label for="product_type_id">Tipe Produk</label>
+                    <select name="product_type_id" class="form-control" required>
+                        <option value="">-- Pilih Tipe Produk --</option>
+                        @foreach($productTypes as $type)
+                            <option value="{{ $type->id }}">{{ $type->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="price">Harga</label>

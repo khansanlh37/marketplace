@@ -6,6 +6,7 @@ use App\Models\Variant;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Branch;
+use App\Models\ProductType;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Http\Controllers\Controller;
@@ -14,30 +15,38 @@ use Illuminate\Support\Facades\Storage;
 class AdminVariantController extends Controller
 {
     public function index()
-    {
-        // Ambil dulu product_id yang aktif atau terbaru
+    {   
+        // Ambil produk terbaru
         $product = Product::latest()->first();
 
         // Simpan ke session
         session(['product_id' => $product->id]);
 
-        $variants = Variant::all();
+        // Ambil semua relasi yang diperlukan
+        $variants = Variant::with(['productType', 'category', 'branch'])->get();
         $products = Product::all();
         $categories = Category::all();
         $branches = Branch::all();
 
-        $product = Product::latest()->first();
-        return view('admin.variants.index', compact('variants', 'categories', 'branches', 'products'));
+        // Ambil hanya tipe produk yang belum dipakai oleh produk ini
+        $productTypes = ProductType::whereNotIn('id', function ($query) use ($product) {
+            $query->select('product_type_id')
+                ->from('variants')
+                ->where('product_id', $product->id);
+        })->get();
+        
+        return view('admin.variants.index', compact('variants', 'categories', 'branches', 'products', 'productTypes'));
         
     }
-
 
     // Menampilkan halaman tambah varian
     public function create()
     {
         $categories = Category::all();
         $branches = Branch::all();
-        return view('admin.variants.create', compact('categories', 'branches'));
+        $productTypes = ProductType::all();
+
+        return view('admin.variants.create', compact('categories', 'branches', 'productTypes'));
     }
 
     // Menyimpan varian yang baru ditambahkan
@@ -45,7 +54,7 @@ class AdminVariantController extends Controller
     {
         try {
             $validated = $request->validate([
-                'type' => 'required|string',
+                'product_type_id' => 'required|exists:product_types,id',
                 'color' => 'required|string',
                 'price' => 'required|numeric',
                 'image' => 'required|image|mimes:jpg,png,jpeg,gif,svg|max:5120',
@@ -69,14 +78,15 @@ class AdminVariantController extends Controller
         }
     }
 
-    public function getVariantByType($product_id, $type)
+    public function getVariantByType($product_id, $id)
     {
         $variants = Variant::where('product_id', $product_id)
-                            ->where('type', $type)
+                            ->where('id', $id)
                             ->get();
 
         $variants->transform(function ($variant) {
-            $variant->gambar = asset('storage/variant_images/' . $variant->image); // untuk field 'gambar' di fetch
+            $variant->gambar = asset('storage/' . $variant->image);
+        // untuk field 'gambar' di fetch
             return $variant;
         });
 
