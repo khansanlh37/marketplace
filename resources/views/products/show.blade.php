@@ -18,12 +18,13 @@
                     @foreach ($product->variants as $variant)
                     <div
                         class="variant-box rounded text-center"
-                        style="cursor: pointer; width: 45px;" {{-- lebar dikit agar tetap compact --}}
+                        style="cursor: pointer; width: 45px; {{ $variant->product_type_id != $defaultTypeId ? 'display:none;' : '' }}"
                         onclick="selectVariant('{{ $variant->id }}')"
+                        data-type-id="{{ $variant->product_type_id }}"
                     >
                         <div
-                            style="width: 36px; height: 36px; background-color: {{ $variant->color }}; border: 1px solid #ccc;"
-                        ></div>
+                            style="width: 36px; height: 36px; background-color: {{ $variant->color }}; border: 1px solid #ccc;">
+                        </div>
                     </div>
                     @endforeach
                 </div>
@@ -34,11 +35,12 @@
             <!-- <p id="selected-color" class="mb-2">Warna: -</p> -->
             <select name="variant" class="form-control" id="variantType">
                 <option value="">Pilih Tipe</option>
-                @foreach($productTypes as $type)
-                    <option value="{{ $type->id }}">{{ $type->name }}</option>
+                @foreach ($productTypes as $type)
+                    <option value="{{ $type->id }}" {{ $type->id == $defaultTypeId ? 'selected' : '' }}>
+                        {{ $type->name }}
+                    </option>
                 @endforeach
             </select>
-            
             <!-- Tombol Simulasi Kredit -->
             <button class="btn btn-primary mt-3">Simulasi Kredit</button>
         </div>
@@ -46,42 +48,61 @@
 </div>
 
 <script>
-    // Fungsi saat klik variant box
-    function selectVariant(id) {
-        // Set dropdown ke tipe yang diklik
-        const variantSelect = document.getElementById('variantType');
-        variantSelect.value = id;
+    const variantElements = document.querySelectorAll('.variant-box');
+    const variantSelect = document.getElementById('variantType');
+    const productId = {{ $product->id }};
 
-        // Panggil event change agar fetch berjalan
-        variantSelect.dispatchEvent(new Event('change'));
-    }
-
-    // Event listener saat user ganti pilihan di dropdown
-    document.getElementById('variantType').addEventListener('change', function() {
+    // Event saat memilih tipe produk dari dropdown
+    variantSelect.addEventListener('change', function () {
         const selectedType = this.value;
-        const productId = {{ $product->id }};
 
         if (!selectedType) return;
 
-        // Tampilkan gambar loading sementara
+        // Tampilkan loading sementara
         document.getElementById("product-image").src = '/loading.gif';
-        // document.getElementById("selected-color").innerText = 'Memuat warna...';
 
+        // Tampilkan hanya warna yg sesuai tipe
+        variantElements.forEach(box => {
+            const typeId = box.getAttribute('data-type-id');
+            if (typeId === selectedType) {
+                box.style.display = 'inline-block';
+            } else {
+                box.style.display = 'none';
+            }
+        });
+
+        // Ambil variant pertama dari tipe tersebut untuk auto-load gambar
         fetch(`/admin/variants/product_id/${productId}/id/${selectedType}`)
             .then(response => response.json())
             .then(data => {
-                console.log(data); // tambahkan ini untuk memastikan isi response
                 if (data.length > 0) {
                     document.getElementById("product-image").src = data[0].gambar;
-                    // document.getElementById("selected-color").innerText = 'Warna: ' + data[0].color;
                 } else {
-                    // document.getElementById("selected-color").innerText = 'Warna tidak ditemukan';
+                    document.getElementById("product-image").src = '/images/no-image.png';
                 }
             })
             .catch(error => {
-                console.error("Error:", error);
-                // document.getElementById("selected-color").innerText = 'Terjadi kesalahan';
+                console.error("Error fetch variant:", error);
+                document.getElementById("product-image").src = '/images/error.png';
             });
+    });
+
+    // Fungsi saat klik kotak warna
+    function selectVariant(id) {
+        // Set ke dropdown
+        const variantSelect = document.getElementById('variantType');
+        variantSelect.value = id;
+
+        // Panggil ulang event change
+        variantSelect.dispatchEvent(new Event('change'));
+    }
+
+    // Trigger awal untuk tipe default (kalau ada)
+    window.addEventListener('DOMContentLoaded', () => {
+        const variantSelect = document.getElementById('variantType');
+        if (variantSelect && variantSelect.value) {
+            variantSelect.dispatchEvent(new Event('change'));
+        }
     });
 </script>
 @endsection

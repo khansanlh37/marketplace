@@ -75,6 +75,9 @@ class ProductController extends Controller
             ->filter() // hapus null
             ->unique('id')
             ->values();
+
+            // Ambil default type id dari variant pertama
+        $defaultTypeId = $variants->first()?->product_type_id;
     
         // Ubah path gambar agar bisa diakses
         foreach ($product->variants as $variant) {
@@ -83,7 +86,7 @@ class ProductController extends Controller
             }
         }
     
-        return view('products.show', compact('product', 'variants', 'productTypes'));
+        return view('products.show', compact('product', 'variants', 'productTypes', 'defaultTypeId'));
     }
     
 

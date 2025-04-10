@@ -11,6 +11,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\FavoriteController;
 
+
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::resource('product-types', App\Http\Controllers\Admin\ProductTypeController::class);
 });
