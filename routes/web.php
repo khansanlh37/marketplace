@@ -11,6 +11,16 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\FavoriteController;
 
+// Rute untuk Edit Tipe Produk
+Route::get('admin/product-types/{productType}/edit', [ProductTypeController::class, 'edit'])->name('admin.product-types.edit');
+
+// Rute untuk Update Tipe Produk
+Route::put('admin/product-types/{productType}', [ProductTypeController::class, 'update'])->name('admin.product-types.update');
+
+// Rute untuk Delete Tipe Produk
+Route::delete('admin/product-types/{productType}', [ProductTypeController::class, 'destroy'])->name('admin.product-types.destroy');
+
+Route::post('/admin/product-types', [ProductTypeController::class, 'store'])->name('product-types.store');
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::resource('product-types', App\Http\Controllers\Admin\ProductTypeController::class);

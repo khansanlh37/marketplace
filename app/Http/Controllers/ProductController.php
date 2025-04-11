@@ -51,54 +51,52 @@ class ProductController extends Controller
         // Kirim kembali nilai search ke view agar tetap ada di input field
         return view('products.index', compact('products', 'regions', 'branches', 'categories', 'search'));
     }
-
-    public function show($id): View
+    public function show($id)
     {
-        $product = Product::with([
-            'variants' => function ($query): void {
-                $query->orderBy('color');
-            },
-            'variants.productType'
-        ])->findOrFail($id);
+        $product = Product::with(['variants', 'productType'])->findOrFail($id);
     
-        // Filter varian yang punya tipe yang valid
-        $variants = $product->variants
-            ->filter(function ($variant): bool {
-                return !empty($variant->type) && strtoupper($variant->type) !== 'N/A';
-            })
-            ->unique('type')
-            ->values();
+        // Pastikan ada data produk dan variannya
+        if (!$product || $product->variants->isEmpty()) {
+            abort(404, 'Product not found or has no variants');
+        }
     
-        // Ambil tipe produk dari relasi
-        $productTypes = $product->variants
-            ->pluck('productType')
-            ->filter() // hapus null
-            ->unique('id')
-            ->values();
-
-            // Ambil default type id dari variant pertama
-        $defaultTypeId = $variants->first()?->product_type_id;
+        // Ambil data tipe produk dari relasi variants
+        $productTypes = $product->variants->pluck('productType')->unique('id');
     
-        // Ubah path gambar agar bisa diakses
+        // Pastikan productTypes tidak kosong
+        if ($productTypes->isEmpty()) {
+            $productTypes = collect(); // Set ke koleksi kosong jika tidak ada
+        }
+    
+        $defaultTypeId = $product->variants->first()->product_type_id ?? null;
+    
+        // Ambil gambar untuk setiap varian agar bisa diakses
         foreach ($product->variants as $variant) {
             if (!empty($variant->image)) {
                 $variant->image = asset('storage/' . $variant->image);
             }
         }
     
-        return view('products.show', compact('product', 'variants', 'productTypes', 'defaultTypeId'));
-    }
+        return view('products.show', [
+            'product' => $product,
+            'variants' => $product->variants,
+            'productTypes' => $productTypes,
+            'defaultTypeId' => $defaultTypeId,
+        ]);
+    }    
     
-
-    public function getVariantsByType(Request $request)
+    public function getVariantByType($product_id, $id)
     {
-        $productId = $request->product_id;
-        $selectedType = $request->type;
+        $variants = Variant::where('product_id', $product_id)
+                            ->where('id', $id)
+                            ->get();
 
-        $variants = Variant::where('product_id', $productId)
-                            ->where('tipe', $selectedType)
-                            ->get(['id', 'warna', 'gambar']);
+        $variants->transform(function ($variant) {
+            $variant->gambar = asset('storage/' . $variant->image);
+ // untuk field 'gambar' di fetch
+            return $variant;
+        });
 
         return response()->json($variants);
-    }
+    }    
 }

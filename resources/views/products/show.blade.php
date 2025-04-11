@@ -35,12 +35,11 @@
             <!-- <p id="selected-color" class="mb-2">Warna: -</p> -->
             <select name="variant" class="form-control" id="variantType">
                 <option value="">Pilih Tipe</option>
-                @foreach ($productTypes as $type)
-                    <option value="{{ $type->id }}" {{ $type->id == $defaultTypeId ? 'selected' : '' }}>
-                        {{ $type->name }}
-                    </option>
+                @foreach ($product->variants as $variant)
+                    <option value="{{ $variant->id }}">{{ $variant->type }}</option>
                 @endforeach
             </select>
+
             <!-- Tombol Simulasi Kredit -->
             <button class="btn btn-primary mt-3">Simulasi Kredit</button>
         </div>

@@ -29,11 +29,7 @@ class AdminVariantController extends Controller
         $branches = Branch::all();
 
         // Ambil hanya tipe produk yang belum dipakai oleh produk ini
-        $productTypes = ProductType::whereNotIn('id', function ($query) use ($product) {
-            $query->select('product_type_id')
-                ->from('variants')
-                ->where('product_id', $product->id);
-        })->get();
+        $productTypes = ProductType::all();
         
         return view('admin.variants.index', compact('variants', 'categories', 'branches', 'products', 'productTypes'));
         
